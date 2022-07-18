@@ -1,0 +1,21 @@
+
+service: cdp
+
+frameworkVersion: '3'
+
+provider:
+  stackName: cdp
+  name: aws
+  runtime: python3.8
+  region: us-east-1
+  deploymentBucket:
+    name: cdp-artefacts
+
+
+functions:
+  hello:
+    handler: handler.create_event
+    events:
+      - http:
+          method: post
+          path: create
