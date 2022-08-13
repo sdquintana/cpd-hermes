@@ -3,17 +3,42 @@ service: cdp
 
 frameworkVersion: '3'
 
+plugins:
+  - serverless-python-requirements
+
+
+custom:
+  pythonRequirements:
+    dockerizePip: False
+
+
 provider:
   stackName: cdp
   name: aws
-  runtime: python3.8
+  runtime: python3.9
   region: us-east-1
   deploymentBucket:
-    name: cdp-artefacts
+    name: cpd-deployments
+
+package:
+  individually: true
+  include:
+    - handler.py
+  exclude:
+    - .git/**
+    - node_modules/**
+    - venv/**
+    - .serverless
 
 
 functions:
-  hello:
+  get-event:
+    handler: handler.get_event
+    events:
+      - http:
+          method: get
+          path: get
+  create-event:
     handler: handler.create_event
     events:
       - http:
