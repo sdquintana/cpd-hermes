@@ -3,14 +3,29 @@ import boto3
 import uuid
 
 from datetime import datetime
+from json_checker import Checker
+
+expected_schema = {'user_id': int, 'event': str}
 
 
 def create_event(event, context):
-    date_storage = datetime.today().strftime('%Y%m%d')
 
-    print(event['body'])
+    try:
+        date_storage = datetime.today().strftime('%Y%m%d')
 
-    event_in = json.loads(event['body'])
+        print(event['body'])
+
+        event_in = json.loads(event['body'])
+
+        checker = Checker(expected_schema)
+        checker.validate(event_in)
+    except Exception as e:
+        print(e)
+        response = {
+            "statusCode": 400,
+            "body": "wrong input"
+        }
+        return response
 
     print(event_in, type(event_in))
 
@@ -25,6 +40,15 @@ def create_event(event, context):
     response = {
         "statusCode": 200,
         "body": f"{event['body']}"
+    }
+
+    return response
+
+
+def get_event(event, context):
+    response = {
+        "statusCode": 200,
+        "body": f"{event}"
     }
 
     return response

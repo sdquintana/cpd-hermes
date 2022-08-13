@@ -2,10 +2,16 @@
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "The AWS CloudFormation template for this Serverless application",
   "Resources": {
-    "HelloLogGroup": {
+    "GetDasheventLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "LogGroupName": "/aws/lambda/cdp-dev-hello"
+        "LogGroupName": "/aws/lambda/cdp-dev-get-event"
+      }
+    },
+    "CreateDasheventLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/cdp-dev-create-event"
       }
     },
     "IamRoleLambdaExecution": {
@@ -85,16 +91,16 @@
         }
       }
     },
-    "HelloLambdaFunction": {
+    "GetDasheventLambdaFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
-          "S3Bucket": "cdp-artefacts",
-          "S3Key": "serverless/cdp/dev/1658089149973-2022-07-17T20:19:09.973Z/cdp.zip"
+          "S3Bucket": "cpd-deployments",
+          "S3Key": "serverless/cdp/dev/1660350484472-2022-08-13T00:28:04.472Z/get-event.zip"
         },
-        "Handler": "handler.create_event",
-        "Runtime": "python3.8",
-        "FunctionName": "cdp-dev-hello",
+        "Handler": "handler.get_event",
+        "Runtime": "python3.9",
+        "FunctionName": "cdp-dev-get-event",
         "MemorySize": 1024,
         "Timeout": 6,
         "Role": {
@@ -105,17 +111,50 @@
         }
       },
       "DependsOn": [
-        "HelloLogGroup"
+        "GetDasheventLogGroup"
       ]
     },
-    "HelloLambdaVersiona6x2UsEAHOqrYOiJ79iTRyYGHgnXNFbLxxC0grc18U": {
+    "CreateDasheventLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "cpd-deployments",
+          "S3Key": "serverless/cdp/dev/1660350484472-2022-08-13T00:28:04.472Z/create-event.zip"
+        },
+        "Handler": "handler.create_event",
+        "Runtime": "python3.9",
+        "FunctionName": "cdp-dev-create-event",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "CreateDasheventLogGroup"
+      ]
+    },
+    "GetDasheventLambdaVersionWu6AdcXvFQZKRTbj03PCudmubSTn0hahpp1Q6wzBGk": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
-          "Ref": "HelloLambdaFunction"
+          "Ref": "GetDasheventLambdaFunction"
         },
-        "CodeSha256": "eqzZ7FEbGOSHelkGtGFXjZrFxvmXnHM4rXykv97mf8g="
+        "CodeSha256": "DiI0kLI1OvEFKNFEsplEcI0tB+fzqrv2/6tsetuQsxs="
+      }
+    },
+    "CreateDasheventLambdaVersion1QVTowc8R7QwO6eVxr24HIGTtSc5rv9kWK2q33Z80Ik": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CreateDasheventLambdaFunction"
+        },
+        "CodeSha256": "DiI0kLI1OvEFKNFEsplEcI0tB+fzqrv2/6tsetuQsxs="
       }
     },
     "ApiGatewayRestApi": {
@@ -128,6 +167,21 @@
           ]
         },
         "Policy": ""
+      }
+    },
+    "ApiGatewayResourceGet": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "get",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
       }
     },
     "ApiGatewayResourceCreate": {
@@ -144,6 +198,52 @@
           "Ref": "ApiGatewayRestApi"
         }
       }
+    },
+    "ApiGatewayMethodGetGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceGet"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "GetDasheventLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "GetDasheventLambdaPermissionApiGateway"
+      ]
     },
     "ApiGatewayMethodCreatePost": {
       "Type": "AWS::ApiGateway::Method",
@@ -176,7 +276,7 @@
                 ":lambda:path/2015-03-31/functions/",
                 {
                   "Fn::GetAtt": [
-                    "HelloLambdaFunction",
+                    "CreateDasheventLambdaFunction",
                     "Arn"
                   ]
                 },
@@ -188,10 +288,10 @@
         "MethodResponses": []
       },
       "DependsOn": [
-        "HelloLambdaPermissionApiGateway"
+        "CreateDasheventLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1658089149417": {
+    "ApiGatewayDeployment1660350483515": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -200,15 +300,53 @@
         "StageName": "dev"
       },
       "DependsOn": [
+        "ApiGatewayMethodGetGet",
         "ApiGatewayMethodCreatePost"
       ]
     },
-    "HelloLambdaPermissionApiGateway": {
+    "GetDasheventLambdaPermissionApiGateway": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "FunctionName": {
           "Fn::GetAtt": [
-            "HelloLambdaFunction",
+            "GetDasheventLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "CreateDasheventLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CreateDasheventLambdaFunction",
             "Arn"
           ]
         },
@@ -243,18 +381,27 @@
   },
   "Outputs": {
     "ServerlessDeploymentBucketName": {
-      "Value": "cdp-artefacts",
+      "Value": "cpd-deployments",
       "Export": {
         "Name": "sls-cdp-dev-ServerlessDeploymentBucketName"
       }
     },
-    "HelloLambdaFunctionQualifiedArn": {
+    "GetDasheventLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "HelloLambdaVersiona6x2UsEAHOqrYOiJ79iTRyYGHgnXNFbLxxC0grc18U"
+        "Ref": "GetDasheventLambdaVersionWu6AdcXvFQZKRTbj03PCudmubSTn0hahpp1Q6wzBGk"
       },
       "Export": {
-        "Name": "sls-cdp-dev-HelloLambdaFunctionQualifiedArn"
+        "Name": "sls-cdp-dev-GetDasheventLambdaFunctionQualifiedArn"
+      }
+    },
+    "CreateDasheventLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "CreateDasheventLambdaVersion1QVTowc8R7QwO6eVxr24HIGTtSc5rv9kWK2q33Z80Ik"
+      },
+      "Export": {
+        "Name": "sls-cdp-dev-CreateDasheventLambdaFunctionQualifiedArn"
       }
     },
     "ServiceEndpoint": {
