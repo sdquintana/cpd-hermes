@@ -25,10 +25,10 @@
               "LogGroupName": "/aws/lambda/cdp-dev-get-event"
             }
           },
-          "CreateDasheventLogGroup": {
+          "TrackDasheventLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "LogGroupName": "/aws/lambda/cdp-dev-create-event"
+              "LogGroupName": "/aws/lambda/track-event"
             }
           },
           "IamRoleLambdaExecution": {
@@ -73,6 +73,9 @@
                         ],
                         "Resource": [
                           {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/track-event:*"
+                          },
+                          {
                             "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/cdp-dev*:*"
                           }
                         ]
@@ -83,6 +86,9 @@
                           "logs:PutLogEvents"
                         ],
                         "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/track-event:*:*"
+                          },
                           {
                             "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/cdp-dev*:*:*"
                           }
@@ -113,7 +119,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "cpd-deployments",
-                "S3Key": "serverless/cdp/dev/1660350484472-2022-08-13T00:28:04.472Z/get-event.zip"
+                "S3Key": "serverless/cdp/dev/1661410835484-2022-08-25T07:00:35.484Z/get-event.zip"
               },
               "Handler": "handler.get_event",
               "Runtime": "python3.9",
@@ -131,16 +137,16 @@
               "GetDasheventLogGroup"
             ]
           },
-          "CreateDasheventLambdaFunction": {
+          "TrackDasheventLambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
               "Code": {
                 "S3Bucket": "cpd-deployments",
-                "S3Key": "serverless/cdp/dev/1660350484472-2022-08-13T00:28:04.472Z/create-event.zip"
+                "S3Key": "serverless/cdp/dev/1661410835484-2022-08-25T07:00:35.484Z/track-event.zip"
               },
               "Handler": "handler.create_event",
               "Runtime": "python3.9",
-              "FunctionName": "cdp-dev-create-event",
+              "FunctionName": "track-event",
               "MemorySize": 1024,
               "Timeout": 6,
               "Role": {
@@ -151,27 +157,27 @@
               }
             },
             "DependsOn": [
-              "CreateDasheventLogGroup"
+              "TrackDasheventLogGroup"
             ]
           },
-          "GetDasheventLambdaVersionWu6AdcXvFQZKRTbj03PCudmubSTn0hahpp1Q6wzBGk": {
+          "TrackDasheventLambdaVersioneFzrGT7sFVzdu58udybetNINXClizmbcoe7yO4lYs": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "TrackDasheventLambdaFunction"
+              },
+              "CodeSha256": "tdOJxbQgzgt2p27tE3a+rke3nEvtpyQoofJHPtTc1bA="
+            }
+          },
+          "GetDasheventLambdaVersionc4S0YzXGl3GAS6ILltINqN8YTPwm5ES5xFA4oabx3c": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "GetDasheventLambdaFunction"
               },
-              "CodeSha256": "DiI0kLI1OvEFKNFEsplEcI0tB+fzqrv2/6tsetuQsxs="
-            }
-          },
-          "CreateDasheventLambdaVersion1QVTowc8R7QwO6eVxr24HIGTtSc5rv9kWK2q33Z80Ik": {
-            "Type": "AWS::Lambda::Version",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "FunctionName": {
-                "Ref": "CreateDasheventLambdaFunction"
-              },
-              "CodeSha256": "DiI0kLI1OvEFKNFEsplEcI0tB+fzqrv2/6tsetuQsxs="
+              "CodeSha256": "tdOJxbQgzgt2p27tE3a+rke3nEvtpyQoofJHPtTc1bA="
             }
           },
           "ApiGatewayRestApi": {
@@ -201,7 +207,7 @@
               }
             }
           },
-          "ApiGatewayResourceCreate": {
+          "ApiGatewayResourceTrack": {
             "Type": "AWS::ApiGateway::Resource",
             "Properties": {
               "ParentId": {
@@ -210,7 +216,7 @@
                   "RootResourceId"
                 ]
               },
-              "PathPart": "create",
+              "PathPart": "track",
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
               }
@@ -262,13 +268,13 @@
               "GetDasheventLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayMethodCreatePost": {
+          "ApiGatewayMethodTrackPost": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
               "HttpMethod": "POST",
               "RequestParameters": {},
               "ResourceId": {
-                "Ref": "ApiGatewayResourceCreate"
+                "Ref": "ApiGatewayResourceTrack"
               },
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
@@ -293,7 +299,7 @@
                       ":lambda:path/2015-03-31/functions/",
                       {
                         "Fn::GetAtt": [
-                          "CreateDasheventLambdaFunction",
+                          "TrackDasheventLambdaFunction",
                           "Arn"
                         ]
                       },
@@ -305,10 +311,10 @@
               "MethodResponses": []
             },
             "DependsOn": [
-              "CreateDasheventLambdaPermissionApiGateway"
+              "TrackDasheventLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1660350483515": {
+          "ApiGatewayDeployment1661410833816": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -318,7 +324,7 @@
             },
             "DependsOn": [
               "ApiGatewayMethodGetGet",
-              "ApiGatewayMethodCreatePost"
+              "ApiGatewayMethodTrackPost"
             ]
           },
           "GetDasheventLambdaPermissionApiGateway": {
@@ -358,12 +364,12 @@
               }
             }
           },
-          "CreateDasheventLambdaPermissionApiGateway": {
+          "TrackDasheventLambdaPermissionApiGateway": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
               "FunctionName": {
                 "Fn::GetAtt": [
-                  "CreateDasheventLambdaFunction",
+                  "TrackDasheventLambdaFunction",
                   "Arn"
                 ]
               },
@@ -403,22 +409,22 @@
               "Name": "sls-cdp-dev-ServerlessDeploymentBucketName"
             }
           },
+          "TrackDasheventLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "TrackDasheventLambdaVersioneFzrGT7sFVzdu58udybetNINXClizmbcoe7yO4lYs"
+            },
+            "Export": {
+              "Name": "sls-cdp-dev-TrackDasheventLambdaFunctionQualifiedArn"
+            }
+          },
           "GetDasheventLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "GetDasheventLambdaVersionWu6AdcXvFQZKRTbj03PCudmubSTn0hahpp1Q6wzBGk"
+              "Ref": "GetDasheventLambdaVersionc4S0YzXGl3GAS6ILltINqN8YTPwm5ES5xFA4oabx3c"
             },
             "Export": {
               "Name": "sls-cdp-dev-GetDasheventLambdaFunctionQualifiedArn"
-            }
-          },
-          "CreateDasheventLambdaFunctionQualifiedArn": {
-            "Description": "Current Lambda function version",
-            "Value": {
-              "Ref": "CreateDasheventLambdaVersion1QVTowc8R7QwO6eVxr24HIGTtSc5rv9kWK2q33Z80Ik"
-            },
-            "Export": {
-              "Name": "sls-cdp-dev-CreateDasheventLambdaFunctionQualifiedArn"
             }
           },
           "ServiceEndpoint": {
@@ -481,29 +487,29 @@
         "timeout": 6,
         "runtime": "python3.9",
         "vpc": {},
-        "versionLogicalId": "GetDasheventLambdaVersionWu6AdcXvFQZKRTbj03PCudmubSTn0hahpp1Q6wzBGk"
+        "versionLogicalId": "GetDasheventLambdaVersionc4S0YzXGl3GAS6ILltINqN8YTPwm5ES5xFA4oabx3c"
       },
-      "create-event": {
+      "track-event": {
         "handler": "handler.create_event",
+        "name": "track-event",
         "events": [
           {
             "http": {
               "method": "post",
-              "path": "create",
+              "path": "track",
               "integration": "AWS_PROXY"
             }
           }
         ],
-        "name": "cdp-dev-create-event",
         "module": ".",
         "package": {
-          "artifact": "/Users/sergioquintana/Documents/other/cpd-hermes/.serverless/create-event.zip"
+          "artifact": "/Users/sergioquintana/Documents/other/cpd-hermes/.serverless/track-event.zip"
         },
         "memory": 1024,
         "timeout": 6,
         "runtime": "python3.9",
         "vpc": {},
-        "versionLogicalId": "CreateDasheventLambdaVersion1QVTowc8R7QwO6eVxr24HIGTtSc5rv9kWK2q33Z80Ik"
+        "versionLogicalId": "TrackDasheventLambdaVersioneFzrGT7sFVzdu58udybetNINXClizmbcoe7yO4lYs"
       }
     },
     "configValidationMode": "warn",
@@ -533,7 +539,7 @@
         ],
         "artifactsS3KeyDirname": "serverless/cdp/dev/code-artifacts",
         "deploymentBucket": "cpd-deployments",
-        "artifactDirectoryName": "serverless/cdp/dev/1660350484472-2022-08-13T00:28:04.472Z"
+        "artifactDirectoryName": "serverless/cdp/dev/1661410835484-2022-08-25T07:00:35.484Z"
       },
       "functions": {
         "$ref": "$[\"service\"][\"functions\"]"
@@ -544,7 +550,7 @@
   },
   "package": {
     "individually": true,
-    "artifactDirectoryName": "serverless/cdp/dev/1660350484472-2022-08-13T00:28:04.472Z",
+    "artifactDirectoryName": "serverless/cdp/dev/1661410835484-2022-08-25T07:00:35.484Z",
     "artifact": ""
   }
 }

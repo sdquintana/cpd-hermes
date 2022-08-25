@@ -4,8 +4,9 @@ import uuid
 
 from datetime import datetime
 from json_checker import Checker
+from requests import get
 
-expected_schema = {'user_id': int, 'event': str}
+expected_schema = {'user_id': int, 'event': str, 'traits': dict, 'properties': dict}
 
 
 def create_event(event, context):
@@ -30,16 +31,31 @@ def create_event(event, context):
     print(event_in, type(event_in))
 
     s3 = boto3.client('s3')
-    json_object = {"user_id": event_in.get('user_id'), "event": event_in.get('event')}
+
+    id = str(uuid.uuid4())
+
+
+    ip = event['requestContext']['identity']['sourceIp']
+
+
+    json_object = {"id": id,
+                   "user_id": event_in.get('user_id'),
+                   "event": event_in.get('event'),
+                   'traits': event_in.get('traits'),
+                   'original_timestamp': f"{datetime.today()}",
+                   'type': 'track',
+                   'properties': json.dumps(event_in.get('properties')),
+                   'ip': str(ip)
+                   }
     s3.put_object(
         Body=json.dumps(json_object),
         Bucket='cpd-data-raw',
-        Key=f'events/{date_storage}/{str(uuid.uuid4())}.json'
+        Key=f'events/{date_storage}/{id}.json'
     )
 
     response = {
         "statusCode": 200,
-        "body": f"{event['body']}"
+        "body": f"{json_object}"
     }
 
     return response

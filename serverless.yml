@@ -5,8 +5,6 @@ frameworkVersion: '3'
 
 plugins:
   - serverless-python-requirements
-
-
 custom:
   pythonRequirements:
     dockerizePip: False
@@ -38,9 +36,10 @@ functions:
       - http:
           method: get
           path: get
-  create-event:
+  track-event:
     handler: handler.create_event
+    name: track-event
     events:
       - http:
           method: post
-          path: create
+          path: track
