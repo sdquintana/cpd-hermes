@@ -49,7 +49,7 @@ def create_event(event, context):
                    }
     s3.put_object(
         Body=json.dumps(json_object),
-        Bucket='cpd-data-raw',
+        Bucket='reingeniate-data-raw',
         Key=f'events/{date_storage}/{id}.json'
     )
 

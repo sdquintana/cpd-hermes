@@ -130,4 +130,6 @@ dmypy.json
 
 .idea*
 
-* .serverless
+.serverless
+node_modules/
+package-lock.json
