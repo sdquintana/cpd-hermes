@@ -1,4 +1,3 @@
-
 service: cdp
 
 frameworkVersion: '3'
@@ -8,6 +7,7 @@ plugins:
 custom:
   pythonRequirements:
     dockerizePip: False
+    layer: true
 
 
 provider:
@@ -16,17 +16,46 @@ provider:
   runtime: python3.9
   region: us-east-1
   deploymentBucket:
-    name: cpd-deployments
+    name: cdp-serverlessdeploymentbucket
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:GetObject"
+        - "s3:PutObject"
+        - "s3:PutObjectAcl"
+      Resource: "*"
+  apiGateway:
+    apiKeys:
+      - fullAccess:
+          - fullAccessKey
+      - limitedAccess:
+          - limitedAccessKey
+    usagePlan:
+      - limitedAccess:
+          quota:
+            limit: 1000
+            offset: 2
+            period: MONTH
+          throttle:
+            burstLimit: 100
+            rateLimit: 50
+      - fullAccess:
+          quota:
+            limit: 50000
+            offset: 1
+            period: MONTH
+          throttle:
+            burstLimit: 2000
+            rateLimit: 1000
 
 package:
   individually: true
-  include:
+  patterns:
     - handler.py
-  exclude:
-    - .git/**
-    - node_modules/**
-    - venv/**
-    - .serverless
+    - '!.git/**'
+    - '!node_modules/**'
+    - '!venv/**'
+    - '!.serverless'
 
 
 functions:
@@ -36,6 +65,9 @@ functions:
       - http:
           method: get
           path: get
+          private: true
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
   track-event:
     handler: handler.create_event
     name: track-event
@@ -43,3 +75,6 @@ functions:
       - http:
           method: post
           path: track
+          private: true
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
