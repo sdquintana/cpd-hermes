@@ -6,8 +6,8 @@ from datetime import datetime
 from json_checker import Checker
 from requests import get
 
-expected_schema = {'user_id': int, 'funnel': str, "type": str, 'event': str, 'traits': dict, 'properties': dict,
-                   'channel': str, 'sent_at': datetime}
+expected_schema = {'user_id': str, 'funnel': str, "type": str, 'event': str, 'traits': dict, 'properties': dict,
+                   'channel': str, 'sent_at': str}
 
 
 def create_event(event, context):
@@ -42,14 +42,15 @@ def create_event(event, context):
                    'funnel': event_in.get('funnel'),
                    'type': event_in.get('type'),
                    'event': event_in.get('event'),
-                   'traits': event_in.get('traits'),
+                   'traits': json.dumps(event_in.get('traits')),
                    'timestamp': f"{datetime.today()}",
                    'properties': json.dumps(event_in.get('properties')),
-                   'channel': str,
+                   'channel': event_in.get('channel'),
                    'sent_at': event_in.get('sent_at'),
                    'ip': str(ip)
 
                    }
+
     s3.put_object(
         Body=json.dumps(json_object),
         Bucket='reingeniate-data-raw',
