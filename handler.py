@@ -6,7 +6,8 @@ from datetime import datetime
 from json_checker import Checker
 from requests import get
 
-expected_schema = {'user_id': int, 'event': str, 'traits': dict, 'properties': dict}
+expected_schema = {'user_id': int, 'funnel': str, "type": str, 'event': str, 'traits': dict, 'properties': dict,
+                   'channel': str, 'sent_at': datetime}
 
 
 def create_event(event, context):
@@ -34,18 +35,20 @@ def create_event(event, context):
 
     id = str(uuid.uuid4())
 
-
     ip = event['requestContext']['identity']['sourceIp']
 
-
     json_object = {"id": id,
-                   "user_id": event_in.get('user_id'),
-                   "event": event_in.get('event'),
+                   'user_id': event_in.get('user_id'),
+                   'funnel': event_in.get('funnel'),
+                   'type': event_in.get('type'),
+                   'event': event_in.get('event'),
                    'traits': event_in.get('traits'),
-                   'original_timestamp': f"{datetime.today()}",
-                   'type': 'track',
+                   'timestamp': f"{datetime.today()}",
                    'properties': json.dumps(event_in.get('properties')),
+                   'channel': str,
+                   'sent_at': event_in.get('sent_at'),
                    'ip': str(ip)
+
                    }
     s3.put_object(
         Body=json.dumps(json_object),
