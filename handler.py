@@ -7,7 +7,7 @@ from json_checker import Checker
 from requests import get
 
 expected_schema = {'user_id': str, 'funnel': str, "type": str, 'event': str, 'traits': dict, 'properties': dict,
-                   'channel': str, 'sent_at': str}
+                   'channel': str}
 
 
 def create_event(event, context):
@@ -46,7 +46,6 @@ def create_event(event, context):
                    'timestamp': f"{datetime.today()}",
                    'properties': json.dumps(event_in.get('properties')),
                    'channel': event_in.get('channel'),
-                   'sent_at': event_in.get('sent_at'),
                    'ip': str(ip)
 
                    }
