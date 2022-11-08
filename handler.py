@@ -22,10 +22,10 @@ def create_event(event, context):
         checker = Checker(expected_schema)
         checker.validate(event_in)
     except Exception as e:
-        print(e)
+
         response = {
             "statusCode": 400,
-            "body": "wrong input"
+            "body": f"{e}"
         }
         return response
 
