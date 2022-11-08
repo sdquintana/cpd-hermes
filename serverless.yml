@@ -4,22 +4,20 @@ frameworkVersion: '3'
 
 plugins:
   - serverless-python-requirements
-
 custom:
   pythonRequirements:
-
-    dockerizePip: false
+    dockerizePip: False
     slim: true
     layer:
       name: cpd-common
       description: "cpd endpoint"
     retain: true
+
 provider:
   stackName: cdp
   name: aws
   runtime: python3.9
   region: us-east-1
-
   deploymentBucket:
     name: cdp-serverlessdeploymentbucket
   iamRoleStatements:
@@ -65,7 +63,7 @@ package:
 
 functions:
   get-event:
-    handler: handler.get_event
+    handler: functions.handler.get_event
     events:
       - http:
           method: get
@@ -74,12 +72,26 @@ functions:
     layers:
       - Ref: PythonRequirementsLambdaLayer
   track-event:
-    handler: handler.create_event
+    handler: functions.handler.create_event
     name: track-event
     events:
       - http:
           method: post
           path: track
           private: true
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
+
+  track-event-test:
+    handler: functions.tests.create_event
+    name: track-event-test
+    events:
+      - http:
+          method: post
+          path: test/track
+          private: true
+          request:
+            template:
+              application/json
     layers:
       - Ref: PythonRequirementsLambdaLayer
