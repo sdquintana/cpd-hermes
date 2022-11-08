@@ -25,7 +25,7 @@ def create_event(event, context):
         print(e)
         body = {
             "success": False,
-            "message": "Wrong input!"
+            "message": f"{e}"
         }
         response = {
             "statusCode": 400,
