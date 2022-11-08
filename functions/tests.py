@@ -51,7 +51,7 @@ def create_event(event, context):
     s3.put_object(
         Body=json.dumps(json_object),
         Bucket='reingeniate-data-raw',
-        Key=f'internal/events/{date_storage}/{id}.json'
+        Key=f'storyplace/events/{date_storage}/{id}.json'
     )
 
     body = {
