@@ -6,7 +6,7 @@ plugins:
   - serverless-python-requirements
 custom:
   pythonRequirements:
-    dockerizePip: False
+    dockerizePip: false
     slim: true
     layer:
       name: cpd-common
@@ -62,15 +62,6 @@ package:
 
 
 functions:
-  get-event:
-    handler: functions.handler.get_event
-    events:
-      - http:
-          method: get
-          path: get
-          private: true
-    layers:
-      - Ref: PythonRequirementsLambdaLayer
   track-event:
     handler: functions.handler.create_event
     name: track-event
@@ -95,3 +86,34 @@ functions:
               application/json
     layers:
       - Ref: PythonRequirementsLambdaLayer
+
+
+  get-events:
+    handler: functions.get_events.handler
+    name: get-events
+    events:
+      - http:
+          method: get
+          path: get
+          private: true
+          request:
+            template:
+              application/json
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
+      - arn:aws:lambda:us-east-1:336392948345:layer:AWSSDKPandas-Python39:1
+
+  get-events_test:
+    handler: functions.tests.get_events
+    name: get-events-test
+    events:
+      - http:
+          method: get
+          path: test/get
+          private: true
+          request:
+            template:
+              application/json
+    layers:
+      - Ref: PythonRequirementsLambdaLayer
+      - arn:aws:lambda:us-east-1:336392948345:layer:AWSSDKPandas-Python39:1
